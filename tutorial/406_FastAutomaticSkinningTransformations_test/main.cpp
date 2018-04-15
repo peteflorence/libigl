@@ -113,25 +113,25 @@ bool pre_draw(igl::opengl::glfw::Viewer & viewer)
       resolve = false;
     }
   }
-    // Find the bounding box
-  Eigen::Vector3d min = V.colwise().minCoeff();
-  Eigen::Vector3d Max = V.colwise().maxCoeff();
+  //   // Find the bounding box
+  // Eigen::Vector3d min = V.colwise().minCoeff();
+  // Eigen::Vector3d Max = V.colwise().maxCoeff();
 
-  // Corners of the bounding box
-  Eigen::MatrixXd V_box(8,3);
-  V_box <<
-  min(0), min(1), min(2),
-  Max(0), min(1), min(2),
-  Max(0), Max(1), min(2),
-  min(0), Max(1), min(2),
-  min(0), min(1), Max(2),
-  Max(0), min(1), Max(2),
-  Max(0), Max(1), Max(2),
-  min(0), Max(1), Max(2);
-  // Plot the corners of the bounding box as points
-  viewer.data().add_points(V_box,Eigen::RowVector3d(1,0,0));
-  viewer.data().add_label(V.row(b(0)),"a control point?");
-  viewer.data().add_points(V.row(b(0)),Eigen::RowVector3d(0,1,0));
+  // // Corners of the bounding box
+  // Eigen::MatrixXd V_box(8,3);
+  // V_box <<
+  // min(0), min(1), min(2),
+  // Max(0), min(1), min(2),
+  // Max(0), Max(1), min(2),
+  // min(0), Max(1), min(2),
+  // min(0), min(1), Max(2),
+  // Max(0), min(1), Max(2),
+  // Max(0), Max(1), Max(2),
+  // min(0), Max(1), Max(2);
+  // // Plot the corners of the bounding box as points
+  // viewer.data().add_points(V_box,Eigen::RowVector3d(1,0,0));
+  // viewer.data().add_label(V.row(b(0)),"a control point?");
+  // viewer.data().add_points(V.row(b(0)),Eigen::RowVector3d(0,1,0));
   return false;
 }
 
@@ -214,6 +214,48 @@ int main(int argc, char *argv[])
     cout << V.row(b(i)) << endl;
   } 
 
+  cout << "computing my own weights" << endl;
+  // iterate over each vertex
+  for (int i = 0; i < V.rows(); i++) {
+    Eigen::RowVector3d this_vertex = V.row(i);
+
+    int closest_vertex = 0;
+    double closest_squared_distance = 1e9;
+
+    // iterate over each control point
+    for (int j = 0; j < b.size(); j++) {
+      // compute distance
+      double norm_squared = (V.row(b(j)) - this_vertex).squaredNorm();
+      if (norm_squared < closest_squared_distance) {
+        closest_squared_distance = norm_squared;
+        closest_vertex = j;
+      }
+    }
+
+    W.row(i) << 0.0, 0.0, 0.0, 0.0, 0.0;
+    W(i,closest_vertex) = 1.0;
+  }
+
+  cout << "print weights again" << endl;
+  for (int i = 0; i < 20; i++) {
+    for (int j = 0; j < 5; j++) {
+      cout << W(i,j) << " ";
+    }
+    cout << endl;
+  }
+
+  // redo M
+  igl::lbs_matrix_column(V,W,M);
+
+  // cluster again according to weights
+  // Cluster according to weights
+  // {
+  //   VectorXi S;
+  //   VectorXd D;
+  //   igl::partition(W,50,G,S,D);
+  // }
+
+
   // Precomputation for FAST
   cout<<"Initializing Fast Automatic Skinning Transformations..."<<endl;
   // number of weights
@@ -262,7 +304,7 @@ int main(int argc, char *argv[])
   //viewer.data().add_label(V.row(b(0)),"a control point?");
 
 
-  viewer.data().show_lines = true;
+  viewer.data().show_lines = false;
   viewer.callback_pre_draw = &pre_draw;
   viewer.callback_key_down = &key_down;
   viewer.core.is_animating = false;
