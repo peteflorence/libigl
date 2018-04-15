@@ -9,7 +9,7 @@ int main(int argc, char * argv[])
 {
   igl::opengl::glfw::Viewer viewer;
   const auto names =
-    {"cube.obj","sphere.obj","xcylinder.obj","ycylinder.obj","zcylinder.obj"};
+    {"/pete_data/fusion_mesh_2018-04-10-16-16-15-trim.off","/pete_data/fusion_mesh_2018-04-10-16-12-21-rim.off"};
   std::map<int, Eigen::RowVector3d> colors;
   int last_selected = -1;
   for(const auto & name : names)
