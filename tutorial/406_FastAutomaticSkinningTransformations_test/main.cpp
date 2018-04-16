@@ -184,10 +184,10 @@ int main(int argc, char *argv[])
 
   // hand specified control points for knight
   W(0,0) = 1.0;
-  W(2000,1) = 1.0;
-  W(4000,2) = 1.0;
-  W(6000,3) = 1.0;
-  W(7000,4) = 1.0;
+  W(10000,1) = 1.0;
+  W(20000,2) = 1.0;
+  W(30000,3) = 1.0;
+  W(40000,4) = 1.0;
 
   //igl::readDMAT(TUTORIAL_SHARED_PATH "/armadillo-weights.dmat",W);
   cout << W.rows() << " " << W.cols() << " is W size" << endl;
