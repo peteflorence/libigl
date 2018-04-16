@@ -13,8 +13,10 @@
 #include <igl/columnize.h>
 #include <igl/readDMAT.h>
 #include <igl/readOBJ.h>
+#include <igl/readOFF.h>
 #include <igl/arap.h>
 #include <igl/arap_dof.h>
+#include <igl/ARAPEnergyType.h>
 #include <igl/opengl/glfw/Viewer.h>
 
 #include <Eigen/Geometry>
@@ -103,7 +105,7 @@ bool pre_draw(igl::opengl::glfw::Viewer & viewer)
       }
     }
     viewer.data().set_vertices(U);
-    viewer.data().set_points(bc.row(0),Eigen::RowVector3d(0,1,0));
+    viewer.data().set_points(bc,Eigen::RowVector3d(0,1,0));
     viewer.data().compute_normals();
     if(viewer.core.is_animating)
     {
@@ -166,12 +168,28 @@ int main(int argc, char *argv[])
 {
   using namespace Eigen;
   using namespace std;
-  igl::readOBJ(TUTORIAL_SHARED_PATH "/armadillo.obj",V,F);
+  string mesh = argv[1];
+  igl::readOFF(TUTORIAL_SHARED_PATH+mesh,V,F);
   U=V;
   cout << V.rows() << " " << V.cols() << " is V size" << endl;
   cout << F.rows() << " " << F.cols() << " is F size" << endl;
-  MatrixXd W;
-  igl::readDMAT(TUTORIAL_SHARED_PATH "/armadillo-weights.dmat",W);
+
+  MatrixXd W = MatrixXd::Zero(V.rows(),5);
+  // hand specified control points for armadillo
+  // W(10495,0) = 1.0;
+  // W( 2440,1) = 1.0;
+  // W(  802,2) = 1.0;
+  // W(15376,3) = 1.0;
+  // W(17094,4) = 1.0;
+
+  // hand specified control points for knight
+  W(0,0) = 1.0;
+  W(2000,1) = 1.0;
+  W(4000,2) = 1.0;
+  W(6000,3) = 1.0;
+  W(7000,4) = 1.0;
+
+  //igl::readDMAT(TUTORIAL_SHARED_PATH "/armadillo-weights.dmat",W);
   cout << W.rows() << " " << W.cols() << " is W size" << endl;
   for (int i = 0; i < 20; i++) {
     cout << W(i) << endl;
@@ -232,8 +250,8 @@ int main(int argc, char *argv[])
       }
     }
 
-    W.row(i) << 0.0, 0.0, 0.0, 0.0, 0.0;
-    W(i,closest_vertex) = 1.0;
+    W.row(i) << 0.01, 0.01, 0.01, 0.01, 0.01;
+    W(i,closest_vertex) = 0.96;
   }
 
   cout << "print weights again" << endl;
@@ -283,8 +301,10 @@ int main(int argc, char *argv[])
 
   // Precomputation for ARAP
   cout<<"Initializing ARAP..."<<endl;
-  arap_data.max_iter = 1;
+  arap_data.max_iter = 2;
+  arap_data.energy = igl::ARAP_ENERGY_TYPE_ELEMENTS;
   igl::arap_precomputation(V,F,V.cols(),b,arap_data);
+  //exit(0);
   // Grouped arap
   cout<<"Initializing ARAP with grouped edge-sets..."<<endl;
   arap_grouped_data.max_iter = 2;
