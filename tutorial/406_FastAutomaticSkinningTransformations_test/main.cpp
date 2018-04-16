@@ -69,15 +69,15 @@ bool pre_draw(igl::opengl::glfw::Viewer & viewer)
       {
         case 2:
           bc(i,0) += 0.15*bbd*sin(0.5*anim_t);
-        //  bc(i,1) += 0.15*bbd*(1.-cos(0.5*anim_t));
+          bc(i,1) += 0.15*bbd*(1.-cos(0.5*anim_t));
           break;
-        // case 1:
-        //   bc(i,1) += 0.10*bbd*sin(1.*anim_t*(i+1));
-        //   bc(i,2) += 0.10*bbd*(1.-cos(1.*anim_t*(i+1)));
-        //   break;
-        // case 0:
-        //   bc(i,0) += 0.20*bbd*sin(2.*anim_t*(i+1));
-        //   break;
+        case 1:
+          bc(i,1) += 0.10*bbd*sin(1.*anim_t*(i+1));
+          bc(i,2) += 0.10*bbd*(1.-cos(1.*anim_t*(i+1)));
+          break;
+        case 0:
+          bc(i,0) += 0.20*bbd*sin(2.*anim_t*(i+1));
+          break;
       }
       Beq(3*i+0) = bc(i,0);
       Beq(3*i+1) = bc(i,1);
@@ -302,7 +302,7 @@ int main(int argc, char *argv[])
   // Precomputation for ARAP
   cout<<"Initializing ARAP..."<<endl;
   arap_data.max_iter = 2;
-  arap_data.energy = igl::ARAP_ENERGY_TYPE_ELEMENTS;
+  //arap_data.energy = igl::ARAP_ENERGY_TYPE_ELEMENTS;
   igl::arap_precomputation(V,F,V.cols(),b,arap_data);
   //exit(0);
   // Grouped arap
@@ -328,7 +328,7 @@ int main(int argc, char *argv[])
   viewer.callback_pre_draw = &pre_draw;
   viewer.callback_key_down = &key_down;
   viewer.core.is_animating = false;
-  viewer.core.animation_max_fps = 30.;
+  viewer.core.animation_max_fps = 100.;
   cout<<
     "Press [space] to toggle animation."<<endl<<
     "Press '0' to reset pose."<<endl<<
